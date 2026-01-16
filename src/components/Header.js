@@ -32,6 +32,11 @@ const pages = [
         "special": ""
     },
     {
+        "title": "Guides",
+        "link": "/guides",
+        "special": ""
+    },
+    {
         "title": "FAQ",
         "link": "/faq",
         "special": ""

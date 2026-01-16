@@ -11,6 +11,8 @@ import AboutPage from "./pages/AboutPage";
 import FAQPage from "./pages/FAQPage";
 import Header from "./components/Header";
 import AnalysisPage from './pages/AnalysisPage';
+import GuidesPage from './pages/GuidesPage';
+import ArticlePage from './pages/ArticlePage';
 
 function App() {
     const [loginUri] = useState(process.env.REACT_APP_SPOTIFY_AUTH_URI);
@@ -57,6 +59,8 @@ function App() {
                 <Route path="/analysis" element={<AnalysisPage isAuth={isAuth} loginUri={loginUri}/>} />
                 <Route path="/faq" element={<FAQPage />} />
                 <Route path="/about" element={<AboutPage />} />
+                <Route path="/guides" element={<GuidesPage />} />
+                <Route path="/guides/:slug" element={<ArticlePage />} />
             </Routes>
         </div>
     );

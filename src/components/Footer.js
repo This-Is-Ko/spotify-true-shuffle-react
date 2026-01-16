@@ -12,6 +12,8 @@ function Footer(props) {
                     &nbsp;&nbsp;|&nbsp;&nbsp;
                     <Link className="footer-links" to="/shuffle">Shuffle</Link>
                     &nbsp;&nbsp;|&nbsp;&nbsp;
+                    <Link className="footer-links" to="/guides">Guides</Link>
+                    &nbsp;&nbsp;|&nbsp;&nbsp;
                     <Link className="footer-links" to="/faq">FAQ</Link>
                     &nbsp;&nbsp;|&nbsp;&nbsp;
                     <Link className="footer-links" to="/about">About</Link>
