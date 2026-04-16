@@ -216,11 +216,11 @@ const AllPlaylistsContainer = ({ selectPlaylist, setSelectedPlaylist, selectedPl
                 // Playlist URI may be available early in the shuffle process
                 if (stateData?.progress?.playlist_uri) {
                     setShuffledPlaylistUri(stateData.progress.playlist_uri);
-                    // Reset polling state if we have the playlist URI (indicates progress and allows user to access playlist)
-                    setPollingAttemptCount(0);
-                    setPollingWaitTimeMs(POLLING_CONFIG.INITIAL_WAIT_TIME_MS);
+                    handlePollingRetry(null, null, { resetWaitToInitial: true });
+                } else {
+                    // In-flight PROGRESS is healthy; only space out polls (do not consume failure attempt budget).
+                    handlePollingRetry(null, null, { applyBackoffOnly: true });
                 }
-                handlePollingRetry(MAX_RETRY_ATTEMPTS.PROGRESS_STATE, ERROR_MESSAGES.SHUFFLE_STATE_FAILED);
                 break;
 
             case PLAYLIST_SHUFFLE_STATE.FAILURE:
@@ -228,7 +228,7 @@ const AllPlaylistsContainer = ({ selectPlaylist, setSelectedPlaylist, selectedPl
                 break;
 
             case PLAYLIST_SHUFFLE_STATE.PENDING:
-                handlePollingRetry(MAX_RETRY_ATTEMPTS.PENDING_STATE, ERROR_MESSAGES.SHUFFLE_STATE_FAILED);
+                handlePollingRetry(null, null, { applyBackoffOnly: true });
                 break;
 
             default:
@@ -237,20 +237,35 @@ const AllPlaylistsContainer = ({ selectPlaylist, setSelectedPlaylist, selectedPl
     };
 
     /**
-     * Handles retry logic for polling operations.
-     * Increments attempt count and applies backoff, or sets error if max attempts reached.
-     * 
-     * @param {number} maxAttempts - Maximum number of retry attempts allowed
-     * @param {string} errorMessage - Error message to display if max attempts exceeded
+     * Handles retry logic and polling interval updates.
+     * By default increments the failure attempt counter, applies backoff, and surfaces an error at the cap.
+     * For successful PROGRESS/PENDING responses, pass applyBackoffOnly or resetWaitToInitial so long-running
+     * work does not consume the same attempt budget as real failures.
+     *
+     * @param {number|null} maxAttempts - Maximum failure attempts (omit when using options-only modes)
+     * @param {string|null} errorMessage - Error message when max attempts exceeded
+     * @param {Object} [options]
+     * @param {boolean} [options.applyBackoffOnly] - Only increase wait time; do not change attempt count
+     * @param {boolean} [options.resetWaitToInitial] - Reset interval to POLLING_CONFIG.INITIAL_WAIT_TIME_MS
      */
-    const handlePollingRetry = (maxAttempts, errorMessage) => {
-        setPollingAttemptCount(prev => {
+    const handlePollingRetry = (maxAttempts, errorMessage, options = {}) => {
+        const { applyBackoffOnly = false, resetWaitToInitial = false } = options;
+
+        if (resetWaitToInitial) {
+            setPollingWaitTimeMs(POLLING_CONFIG.INITIAL_WAIT_TIME_MS);
+            return;
+        }
+        if (applyBackoffOnly) {
+            setPollingWaitTimeMs((currentWaitTime) => calculateNextPollingWaitTime(currentWaitTime));
+            return;
+        }
+
+        setPollingAttemptCount((prev) => {
             const newAttemptCount = prev + 1;
-            // Check if we've exceeded max attempts after incrementing
             if (newAttemptCount >= maxAttempts) {
                 setShuffleError({ message: errorMessage });
             } else {
-                setPollingWaitTimeMs(currentWaitTime => calculateNextPollingWaitTime(currentWaitTime));
+                setPollingWaitTimeMs((currentWaitTime) => calculateNextPollingWaitTime(currentWaitTime));
             }
             return newAttemptCount;
         });

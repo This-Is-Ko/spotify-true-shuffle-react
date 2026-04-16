@@ -4,8 +4,6 @@
 
 // Maximum retry attempts for different shuffle states
 export const MAX_RETRY_ATTEMPTS = {
-    PROGRESS_STATE: 30,
-    PENDING_STATE: 20,
     ERROR_STATE: 5,
     FALLBACK_STATE: 20
 };
