@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import React, { useState } from "react";
 import { Typography } from "@mui/material";
 import { Helmet } from "react-helmet";
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 import Main from "./components/Main"
 import ShufflePage from "./pages/ShufflePage";
@@ -58,6 +59,7 @@ function App() {
                 <Route path="/faq" element={<FAQPage />} />
                 <Route path="/about" element={<AboutPage />} />
             </Routes>
+            <SpeedInsights />
         </div>
     );
 }
